@@ -1,0 +1,3 @@
+# clustercontrol
+
+A CLI script heavily inspired by [docker-mpi](https://github.com/czerenkow/docker-mpi) and [alpine-mpich](https://github.com/NLKNguyen/alpine-mpich) for building and controlling docker-based MPI clusters via `docker swarm', `docker compose`, and `docker stack`. The motivation for this was to create a homebrew GPU cluster that can be used for distributed [Pytorch](https://github.com/pytorch/pytorch) testing, but can of course be used for any MPI job with the proper Docker image. 
