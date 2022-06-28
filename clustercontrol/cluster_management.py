@@ -6,8 +6,8 @@ from typing import Any, Dict
 
 import yaml
 
-from schemas import ClusterConfig, ClusterOpts
-from swarm_management import registry_is_initialized, swarm_is_initialized
+from .schemas import ClusterConfig, ClusterOpts
+from .swarm_management import registry_is_initialized, swarm_is_initialized
 
 logger = loguru.logger
 

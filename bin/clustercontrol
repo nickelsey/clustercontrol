@@ -12,10 +12,10 @@ from pydantic import (
 )
 from typing import Union
 
-from cluster_connection import connection_control
-from cluster_management import cluster_control
-from schemas import ClusterConfig
-from swarm_management import swarm_control
+from clustercontrol.cluster_connection import connection_control
+from clustercontrol.cluster_management import cluster_control
+from clustercontrol.schemas import ClusterConfig
+from clustercontrol.swarm_management import swarm_control
 
 logger = loguru.logger
 

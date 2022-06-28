@@ -6,7 +6,7 @@ import loguru
 from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
-from schemas import ClusterConfig, SwarmOpts
+from .schemas import ClusterConfig, SwarmOpts
 
 logger = loguru.logger
 

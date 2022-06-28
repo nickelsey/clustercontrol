@@ -5,9 +5,9 @@ from invoke.exceptions import UnexpectedExit
 from fabric import Connection
 from pydantic import IPvAnyAddress, ValidationError
 
-from cluster_management import cluster_is_initialized
-from schemas import ConnectionOpts, ClusterConfig
-from swarm_management import registry_is_initialized, swarm_is_initialized
+from .cluster_management import cluster_is_initialized
+from .schemas import ConnectionOpts, ClusterConfig
+from .swarm_management import registry_is_initialized, swarm_is_initialized
 
 logger = loguru.logger
 
