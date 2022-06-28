@@ -54,17 +54,17 @@ class ClusterController(object):
             logger.error("Cluster config has logical error: {err}")
             return
 
-    def swarm(self, up=False, down=False):
+    def swarm(self, up: bool = False, down: bool = False) -> None:
         swarm_control(cluster_config=self.cluster_config, swarm_up=up, swarm_down=down)
 
-    def cluster(self, up=False, down=False):
+    def cluster(self, up: bool = False, down: bool = False) -> None:
         cluster_control(
             cluster_config=self.cluster_config, cluster_up=up, cluster_down=down
         )
 
-    def connect(self, host: Union[Path, None] = None):
+    def connect(self, host: Union[Path, None] = None) -> None:
         connection_control(cluster_config=self.cluster_config, host=host)
 
 
 if __name__ == "__main__":
-    fire.Fire(ClusterController, name="cluster_controller")
+    fire.Fire(ClusterController, name="clustercontroller")
