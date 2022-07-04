@@ -16,6 +16,7 @@ class ClusterSpec(BaseModel):
     @validator("dockerfile")
     def check_for_dockerfile(cls, v):
         assert v.name == "Dockerfile", "Dockerfile name must be exactly Dockerfile"
+        return v
 
     @validator("nfs_root", "nfs_mount")
     def check_for_absolute_path(cls, v):
