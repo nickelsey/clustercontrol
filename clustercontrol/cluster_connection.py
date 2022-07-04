@@ -23,15 +23,15 @@ def connection_control(
 
     if connect_opts.host == None:
         host = list(cluster_config.managers.keys())[0]
-        service_name = "mpi_cluster_master"
     else:
         host = connect_opts.host
+
     ip_address, service_name = (
-        cluster_config.managers[host],
-        "mpi_cluster_master"
+        (cluster_config.managers[host],
+        "mpi_cluster_master")
         if host in cluster_config.managers.keys()
-        else cluster_config.workers[host],
-        "mpi_cluster_worker",
+        else (cluster_config.workers[host],
+        "mpi_cluster_worker")
     )
 
     try:
