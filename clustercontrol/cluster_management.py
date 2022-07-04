@@ -12,14 +12,14 @@ from .swarm_management import registry_is_initialized, swarm_is_initialized
 logger = loguru.logger
 
 
-def build_and_push_image(cluster_config: ClusterConfig) -> bool:
+def deploy_mpi_cluster(cluster_config: ClusterConfig) -> None:
     manager = list(cluster_config.managers.keys())[0]
     ip_address = cluster_config.managers[manager]
 
     try:
         with Connection(ip_address.exploded) as conn:
             try:
-                conn.put(
+                res = conn.put(
                     local=str(cluster_config.cluster_spec.dockerfile),
                     remote=str(cluster_config.cluster_spec.nfs_root),
                 )
@@ -27,56 +27,23 @@ def build_and_push_image(cluster_config: ClusterConfig) -> bool:
                 logger.error(
                     f"dockerfile: {cluster_config.cluster_spec.dockerfile} not found"
                 )
-                return False
+                return
             except PermissionError as err:
                 logger.error(
                     "got permission error when attempting to load dockerfile to"
                     " manager - does user have access to"
                     f" {cluster_config.cluster_spec.nfs_root} on {manager}?"
                 )
-                return False
-            dockerfile_path = (
-                cluster_config.cluster_spec.nfs_root
-                / cluster_config.cluster_spec.dockerfile.name
-            )
-            image_name = "127.0.0.1:5000/mpi"
-            result = conn.run(
-                f"docker build -t {image_name} -f"
-                f" {dockerfile_path} {cluster_config.cluster_spec.nfs_root}",
-                hide=False,
-            )
-            if result.failed:
-                logger.error(
-                    f"Failed to build and push docker image on manager {manager}:"
-                    f" {ip_address}"
-                )
-                logger.error(f"stdout: {result.stdout}")
-                logger.error(f"stderr: {result.stderr}")
-                return False
-            else:
-                logger.info(
-                    f"image: {cluster_config.cluster_spec.dockerfile} built and pushed"
-                    " to cluster registry"
-                )
-                return True
+                return
     except UnexpectedExit as err:
         logger.error(
             f"Failed to connect and build MPI image on manager {manager}: {ip_address},"
             f" got error: {err}"
         )
-    return False
 
-
-def deploy_mpi_cluster(cluster_config: ClusterConfig) -> None:
-    # image_status = build_and_push_image(cluster_config=cluster_config)
-    # if not image_status:
-    #     logger.error("Docker image couldn't be built: can't deploy MPI cluster")
-    #     return
-
-    manager = list(cluster_config.managers.keys())[0]
-    ip_address = cluster_config.managers[manager]
     local_tmp_file = "compose_config_tmp_file.yml"
     compose_config = build_compose_config(cluster_config)
+
     with open(local_tmp_file, "w") as f:
         yaml.dump(compose_config, f, Dumper=yaml.Dumper)
     remote_file = cluster_config.cluster_spec.nfs_root / "docker-compose.yml"
@@ -133,7 +100,9 @@ def build_compose_config(cluster_config: ClusterConfig) -> Dict[str, Any]:
             "master": {
                 "image": "127.0.0.1:5000/mpi",
                 "build": f"{cluster_config.cluster_spec.build_context}",
-                "deploy": {"placement": {"constraints": ["node.role==manager"]}},
+                "deploy": {
+                    "placement": {"constraints": ["node.role==manager"]},
+                },
                 "volumes": [
                     f"{cluster_config.cluster_spec.nfs_root}:{cluster_config.cluster_spec.nfs_mount}"
                 ],
