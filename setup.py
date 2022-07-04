@@ -20,5 +20,6 @@ setup(
     log_description_content_type="text/markdown",
     author="Nick Elsey",
     author_email="nicholas.elsey@gmail.com",
+    packages=["clustercontrol"],
     scripts=["bin/clustercontrol"],
 )
