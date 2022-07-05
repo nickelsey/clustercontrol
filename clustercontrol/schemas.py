@@ -95,3 +95,7 @@ class ConnectionOpts(BaseModel):
         )
         assert host in valid_hosts, f"host not recognized, must be one of {valid_hosts}"
         return v
+
+
+class NodeOpts(BaseModel):
+    gpu_config: bool

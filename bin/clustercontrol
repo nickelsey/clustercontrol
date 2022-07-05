@@ -14,6 +14,7 @@ from typing import Union
 
 from clustercontrol.cluster_connection import connection_control
 from clustercontrol.cluster_management import cluster_control
+from clustercontrol.node_management import node_control
 from clustercontrol.schemas import ClusterConfig
 from clustercontrol.swarm_management import swarm_control
 
@@ -53,6 +54,9 @@ class ClusterController(object):
         except ValidationError as err:
             logger.error("Cluster config has logical error: {err}")
             return
+    
+    def node(self, configure_gpus=True) -> None:
+        node_control(cluster_config=self.cluster_config, configure_gpus=configure_gpus)
 
     def swarm(self, up: bool = False, down: bool = False) -> None:
         swarm_control(cluster_config=self.cluster_config, swarm_up=up, swarm_down=down)
