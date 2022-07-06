@@ -1,0 +1,10 @@
+FROM ubuntu:latest
+
+RUN apt-get update -y && \
+    apt-get install -y \
+    tinysshd \
+    ucspi-tcp
+
+RUN tinysshd-makekey /etc/tinyssh/sshkeydir
+
+CMD ["tcpserver", "-HRDl0", "0.0.0.0", "22", "/usr/sbin/tinysshd", "-v", "/etc/tinyssh/sshkeydir"]

@@ -1,0 +1,40 @@
+# currently, the clustercontrol supports only one manager
+# for the cluster. There can be 1 or worker nodes.
+# all hosts should be specified as hostname: ip_address.
+managers:
+        # one manager. Manager does not need to be the 
+        # node that the cluster is being managed from.
+        # For instance, a personal laptop can be used to
+        # control a set of servers that are all accessible
+        # via IP.
+        manager_hostname: manager_ip_address
+workers:
+        # one or more workers
+        worker1_hostname: worker1_ip_address
+        worker2_hostname: worker2_ip_address
+cluster_spec:
+        # all nodes need to have an NFS mounted
+        # at the same location.
+        # nfs_root is the NFS mount point on the host.
+        nfs_root: /cluster
+        # nfs_mount is where the nfs_root will be 
+        # mounted in the docker containers. This FS
+        # can be used to share files/logs/etc between
+        # nodes.
+        nfs_mount: /cluster
+        # the docker build context used to build the 
+        # docker image on the manager node.
+        build_context: /cluster
+        # path to the Dockerfile that will be copied
+        # to manager node and built.
+        dockerfile: config/Dockerfile
+        # total number of replicas to spin up. The number
+        # of total containers will be replicas + 1, where 
+        # the 1 is for the manager. replicas can be any 
+        # number <= max_replicas_per_node * num_workers
+        replicas: 1
+        # the maximum number of replicas that can be 
+        # deployed on a single node. For instance, for 
+        # GPU jobs, this would normally be set to the 
+        # number of GPUs on the machine.
+        max_replicas_per_node: 1
