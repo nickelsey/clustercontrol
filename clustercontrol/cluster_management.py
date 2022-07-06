@@ -94,7 +94,7 @@ def deploy_mpi_cluster(cluster_config: ClusterConfig) -> None:
 
 
 def build_compose_config(cluster_config: ClusterConfig) -> Dict[str, Any]:
-    return {
+    config = {
         "version": "3.8",
         "services": {
             "master": {
@@ -119,6 +119,7 @@ def build_compose_config(cluster_config: ClusterConfig) -> Dict[str, Any]:
             },
         },
     }
+    return config
 
 
 def teardown_mpi_cluster(cluster_config: ClusterConfig) -> None:
