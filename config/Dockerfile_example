@@ -8,8 +8,6 @@ RUN apt-get update -y && \
     dnsutils \
     rsync
 
-RUN tinysshd-makekey /etc/tinyssh/sshkeydir
-
 # Configure tinysshd
 RUN tinysshd-makekey /etc/tinyssh/sshkeydir
 RUN mkdir /root/.ssh/
