@@ -3,7 +3,10 @@ FROM ubuntu:latest
 RUN apt-get update -y && \
     apt-get install -y \
     tinysshd \
-    ucspi-tcp
+    ucspi-tcp \
+    iputils-ping \
+    dnsutils \
+    rsync
 
 RUN tinysshd-makekey /etc/tinyssh/sshkeydir
 

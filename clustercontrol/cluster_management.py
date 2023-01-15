@@ -5,6 +5,7 @@ from pydantic import ValidationError
 from typing import Any, Dict
 
 import yaml
+import json
 
 from .schemas import ClusterConfig, ClusterOpts
 from .swarm_management import registry_is_initialized, swarm_is_initialized
@@ -66,26 +67,48 @@ def deploy_mpi_cluster(cluster_config: ClusterConfig) -> None:
                     logger.error(f"stdout: {build_push_result.stdout}")
                     logger.error(f"stderr: {build_push_result.stderr}")
                     return
-            deploy_result = conn.run(
-                f"docker stack deploy -c {remote_file} mpi_cluster",
-                hide=True,
-            )
-            if deploy_result.failed:
-                logger.error(
-                    f"Failed to deploy MPI cluster from manager {manager}: {ip_address}"
+                deploy_result = conn.run(
+                    f"docker stack deploy -c {remote_file} mpi_cluster",
+                    hide=True,
                 )
-                logger.error(f"config: {compose_config}")
-                logger.error(f"stdout: {deploy_result.stdout}")
-                logger.error(f"stderr: {deploy_result.stderr}")
-            else:
-                logger.info("MPI cluster deployed with config:")
-                logger.info(compose_config)
-            cleanup_result = conn.run(f"rm {remote_file}")
-            if cleanup_result.failed:
-                logger.error(
-                    "warning: could not delete compose file on manager"
-                    f" {manager} {ip_address}: {remote_file}"
+                if deploy_result.failed:
+                    logger.error(
+                        f"Failed to deploy MPI cluster from manager {manager}:"
+                        f" {ip_address}"
+                    )
+                    logger.error(f"config: {compose_config}")
+                    logger.error(f"stdout: {deploy_result.stdout}")
+                    logger.error(f"stderr: {deploy_result.stderr}")
+                else:
+                    logger.info("MPI cluster deployed with config:")
+                    logger.info(compose_config)
+                cleanup_result = conn.run(f"rm {remote_file}")
+                if cleanup_result.failed:
+                    logger.error(
+                        "warning: could not delete compose file on manager"
+                        f" {manager} {ip_address}: {remote_file}"
+                    )
+                # add a hosts.txt file to the nfs directory by inspecting docker service
+                docker_services = conn.run("docker service ls", hide=True).stdout.split(
+                    "\n"
                 )
+                service_ids = []
+                for l in docker_services:
+                    if "mpi_cluster_master" in l or "mpi_cluster_worker" in l:
+                        service_ids.append(l.split()[0])
+                cluster_ips = []
+                for service_id in service_ids:
+                    service_info = conn.run(f"docker inspect {service_id}", hide=True)
+                    service_json = json.loads(service_info.stdout)
+                    for entry in service_json:
+                        ips = entry["Endpoint"]["VirtualIPs"]
+                        assert len(ips) == 1, "don't handle the multi-ip case yet"
+                        cluster_ips.append(ips[0]["Addr"][:-3])
+                for idx, ip in enumerate(cluster_ips):
+                    if idx == 0:
+                        conn.run(f"echo {ip} > hosts.txt", hide=True)
+                    else:
+                        conn.run(f"echo {ip} >> hosts.txt", hide=True)
     except UnexpectedExit as err:
         logger.error(
             f"Failed to connect and deploy MPI cluster on manager {manager}:"
@@ -137,6 +160,16 @@ def teardown_mpi_cluster(cluster_config: ClusterConfig) -> None:
                 logger.error(f"stdout: {result.stdout}")
                 logger.error(f"stderr: {result.stderr}")
             else:
+                result = conn.run(
+                    f"rm {cluster_config.cluster_spec.nfs_root}/hosts.txt", hide=True
+                )
+                if result.failed:
+                    logger.error(
+                        "failed to delete hosts file from NFS mount:"
+                        f" {cluster_config.cluster_spec.nfs_root}/hosts.txt. It may"
+                        " have already been deleted, or there may be an issue with"
+                        " tearing down the cluster."
+                    )
                 logger.info("MPI cluster teardown successful")
     except UnexpectedExit as err:
         logger.error(

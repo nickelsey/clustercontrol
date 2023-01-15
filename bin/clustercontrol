@@ -54,7 +54,7 @@ class ClusterController(object):
         except ValidationError as err:
             logger.error("Cluster config has logical error: {err}")
             return
-    
+
     def node(self, configure_gpus=True) -> None:
         node_control(cluster_config=self.cluster_config, configure_gpus=configure_gpus)
 
