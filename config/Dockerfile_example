@@ -10,4 +10,12 @@ RUN apt-get update -y && \
 
 RUN tinysshd-makekey /etc/tinyssh/sshkeydir
 
+# Configure tinysshd
+RUN tinysshd-makekey /etc/tinyssh/sshkeydir
+RUN mkdir /root/.ssh/
+COPY ssh/*  /root/.ssh/
+RUN chmod 700 /root/.ssh/
+RUN chmod 600 /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/id_ecdsa
+
 CMD ["tcpserver", "-HRDl0", "0.0.0.0", "22", "/usr/sbin/tinysshd", "-v", "/etc/tinyssh/sshkeydir"]
