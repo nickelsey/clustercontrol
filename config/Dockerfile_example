@@ -11,9 +11,11 @@ RUN apt-get update -y && \
 # Configure tinysshd
 RUN tinysshd-makekey /etc/tinyssh/sshkeydir
 RUN mkdir /root/.ssh/
-COPY ssh/*  /root/.ssh/
+RUN echo "Host *\n\t StrictHostKeyChecking no" > /root/.ssh/config
+RUN ssh-keygen -q -t ed25519 -N '' <<< $'\ny' >/dev/null 2>&1
+RUN cat /root/.ssh/id_ed25519.pub  | awk '{print $1 " " $2}' > /root/.ssh/authorized_keys
 RUN chmod 700 /root/.ssh/
 RUN chmod 600 /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/id_ecdsa
+RUN chmod 600 /root/.ssh/id_ed25519
 
 CMD ["tcpserver", "-HRDl0", "0.0.0.0", "22", "/usr/sbin/tinysshd", "-v", "/etc/tinyssh/sshkeydir"]

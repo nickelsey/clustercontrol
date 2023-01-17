@@ -139,6 +139,9 @@ def build_compose_config(cluster_config: ClusterConfig) -> Dict[str, Any]:
                         "max_replicas_per_node": cluster_config.cluster_spec.max_replicas_per_node
                     },
                 },
+                "volumes": [
+                    f"{cluster_config.cluster_spec.nfs_root}:{cluster_config.cluster_spec.nfs_mount}"
+                ],
             },
         },
     }
